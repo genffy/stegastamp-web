@@ -3,7 +3,7 @@ import glob
 from PIL import Image, ImageOps
 import numpy as np
 import tensorflow as tf
-import tensorflow.contrib.image
+# import tensorflow.contrib.image
 from tensorflow.python.saved_model import tag_constants
 from tensorflow.python.saved_model import signature_constants
 
@@ -26,16 +26,17 @@ def main():
     else:
         print('Missing input image')
         return
+    # TODO use v2 api `compat.v1`
+    # refs https://www.tensorflow.org/guide/migrate
+    sess = tf.compat.v1.InteractiveSession(graph=tf.Graph())
 
-    sess = tf.InteractiveSession(graph=tf.Graph())
-
-    model = tf.saved_model.loader.load(sess, [tag_constants.SERVING], args.model)
+    model = tf.compat.v1.saved_model.loader.load(sess, [tag_constants.SERVING], args.model)
 
     input_image_name = model.signature_def[signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY].inputs['image'].name
-    input_image = tf.get_default_graph().get_tensor_by_name(input_image_name)
+    input_image = tf.compat.v1.get_default_graph().get_tensor_by_name(input_image_name)
 
     output_secret_name = model.signature_def[signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY].outputs['decoded'].name
-    output_secret = tf.get_default_graph().get_tensor_by_name(output_secret_name)
+    output_secret = tf.compat.v1.get_default_graph().get_tensor_by_name(output_secret_name)
 
     bch = bchlib.BCH(BCH_POLYNOMIAL, BCH_BITS)
 

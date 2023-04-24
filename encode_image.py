@@ -4,7 +4,7 @@ import os
 from PIL import Image,ImageOps
 import numpy as np
 import tensorflow as tf
-import tensorflow.contrib.image
+# import tensorflow.contrib.image
 from tensorflow.python.saved_model import tag_constants
 from tensorflow.python.saved_model import signature_constants
 
@@ -29,20 +29,20 @@ def main():
         print('Missing input image')
         return
 
-    sess = tf.InteractiveSession(graph=tf.Graph())
+    sess = tf.compat.v1.InteractiveSession(graph=tf.Graph())
 
-    model = tf.saved_model.loader.load(sess, [tag_constants.SERVING], args.model)
+    model = tf.compat.v1.saved_model.loader.load(sess, [tag_constants.SERVING], args.model)
 
     input_secret_name = model.signature_def[signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY].inputs['secret'].name
     input_image_name = model.signature_def[signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY].inputs['image'].name
-    input_secret = tf.get_default_graph().get_tensor_by_name(input_secret_name)
-    input_image = tf.get_default_graph().get_tensor_by_name(input_image_name)
+    input_secret = tf.compat.v1.get_default_graph().get_tensor_by_name(input_secret_name)
+    input_image = tf.compat.v1.get_default_graph().get_tensor_by_name(input_image_name)
 
     output_stegastamp_name = model.signature_def[signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY].outputs['stegastamp'].name
     output_residual_name = model.signature_def[signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY].outputs['residual'].name
-    output_stegastamp = tf.get_default_graph().get_tensor_by_name(output_stegastamp_name)
-    output_residual = tf.get_default_graph().get_tensor_by_name(output_residual_name)
-
+    output_stegastamp = tf.compat.v1.get_default_graph().get_tensor_by_name(output_stegastamp_name)
+    output_residual = tf.compat.v1.get_default_graph().get_tensor_by_name(output_residual_name)
+    # https://github.com/tancik/StegaStamp/issues/43
     width = 400
     height = 400
 
@@ -65,7 +65,14 @@ def main():
             os.makedirs(args.save_dir)
         size = (width, height)
         for filename in files_list:
-            image = Image.open(filename).convert("RGB")
+            img_rgba = Image.open(filename)
+            # img_rgba.load()
+            # r, g, b, a = img_rgba.split()
+            image = img_rgba.convert("RGB")
+            # Extract the alpha channel as a grayscale image
+            alpha_channel_save = img_rgba.getchannel('A')
+            # alpha_channel_save.save('alpha_channel.png', 'PNG')
+            print(alpha_channel_save)
             image = np.array(ImageOps.fit(image,size),dtype=np.float32)
             image /= 255.
 
@@ -83,6 +90,9 @@ def main():
             save_name = filename.split('/')[-1].split('.')[0]
 
             im = Image.fromarray(np.array(rescaled))
+            r, g, b = im.split()
+            # Merge the RGB and alpha channel images
+            im = Image.merge('RGBA', (r, g, b, alpha_channel_save))
             im.save(args.save_dir + '/'+save_name+'_hidden.png')
 
             im = Image.fromarray(np.squeeze(np.array(residual)))
