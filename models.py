@@ -35,6 +35,7 @@ class StegaStampEncoder(Layer):
         image = image - .5
 
         secret = self.secret_dense(secret)
+        # TODO: reshape to 50x50x3
         secret = Reshape((50, 50, 3))(secret)
         secret_enlarged = UpSampling2D(size=(8,8))(secret)
 

@@ -66,13 +66,8 @@ def main():
         size = (width, height)
         for filename in files_list:
             img_rgba = Image.open(filename)
-            # img_rgba.load()
-            # r, g, b, a = img_rgba.split()
             image = img_rgba.convert("RGB")
             # Extract the alpha channel as a grayscale image
-            alpha_channel_save = img_rgba.getchannel('A')
-            # alpha_channel_save.save('alpha_channel.png', 'PNG')
-            print(alpha_channel_save)
             image = np.array(ImageOps.fit(image,size),dtype=np.float32)
             image /= 255.
 
@@ -90,9 +85,6 @@ def main():
             save_name = filename.split('/')[-1].split('.')[0]
 
             im = Image.fromarray(np.array(rescaled))
-            r, g, b = im.split()
-            # Merge the RGB and alpha channel images
-            im = Image.merge('RGBA', (r, g, b, alpha_channel_save))
             im.save(args.save_dir + '/'+save_name+'_hidden.png')
 
             im = Image.fromarray(np.squeeze(np.array(residual)))
