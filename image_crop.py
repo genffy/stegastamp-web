@@ -14,7 +14,6 @@ print(width, height, num_tiles_x, num_tiles_y)
 
 # Loop over the tiles and save each one as a separate image
 new_image = img.copy()
-transparent_mask = Image.open('./corp/400_400_transparent_hidden.png')
 for i in range(num_tiles_x):
     x1 = i * tile_size
     x2 = x1 + tile_size
@@ -31,14 +30,14 @@ for i in range(num_tiles_x):
         # print('x1, y1, x2, y2')
         # print(x1, y1, x2, y2)
         # Crop the current tile from the input image
-        # tile = new_image.crop((x1, y1, x2, y2))
+        tile = new_image.crop((x1, y1, x2, y2))
         # # Save the current tile as a separate image
-        # im_hidden, im_residual = encode_img(tile)
+        im_hidden, im_residual = encode_img(tile)
         # bg = Image.new(im.mode, im.size, (255,255,255,0))
         # diff = ImageChops.difference(tile, im_hidden)
         # print(diff)
         # im_hidden.save(f'corp/spilt/tile_{i}_{j}.png')
-        img.paste(transparent_mask, (x1, y1, x2, y2))
+        img.paste(im_hidden, (x1, y1, x2, y2))
         # if im_hidden:
         #     # encode_img.show()
         #     im_hidden.save(f'corp/tile_{i}_{j}.png')
