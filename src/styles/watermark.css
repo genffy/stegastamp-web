@@ -1,0 +1,37 @@
+.App {
+    font-family: sans-serif;
+    margin: 16px;
+    /* overflow: hidden; */
+}
+
+.Crop-Controls {
+    margin-bottom: 10px;
+}
+
+.Crop-Controls>* {
+    margin-bottom: 3px;
+}
+
+img {
+    max-width: 100%;
+}
+
+.App .container {
+    /* display: flex;
+    align-items: center;
+    justify-content: center; */
+}
+
+.App .container .left {
+    width: calc(60% - (.5em + 6px));
+    float: left;
+    min-height: 400px;
+    margin-top: 1em;
+}
+
+.App .container .right {
+    width: calc(40% - (.5em + 6px));
+    float: right;
+    min-height: 400px;
+    margin-top: 1em;
+}
