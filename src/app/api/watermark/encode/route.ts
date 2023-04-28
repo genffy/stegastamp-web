@@ -4,6 +4,10 @@ export async function POST(req: Request, res: Response) {
   const destination = fs.createWriteStream(`./upload/image.jpeg`, {
     encoding: "utf-8",
   });
+  // get query params from url
+  const { searchParams } = new URL(req.url);
+  const position = searchParams.get("pos");
+  const scale = searchParams.get("scale");
   // @ts-ignore
   const webWritableStream = Writable.toWeb(destination);
   // @ts-ignore
@@ -15,15 +19,12 @@ export async function POST(req: Request, res: Response) {
     console.log("error");
   });
 
-  // console.log(req.body);
-  // // @ts-ignore
-  // console.log(req.body.type);
-  // const reader = req.body.getReader();
   return new Response(
     JSON.stringify({
       code: 0,
       data: {
-        url: "",
+        position,
+        scale,
       },
     })
   );
