@@ -149,11 +149,19 @@ export default function IndexMark() {
                 // 截取的 position, scale, rotate
                 console.log('completedCrop', completedCrop)
                 console.log('previewData', previewData)
+                const formData = new FormData();
+                formData.append("myImage", data.blob);
+                if (previewData) {
+                    formData.append("previewData", JSON.stringify(previewData));
+                }
                 // how to convert completedCrop and previewData to position
                 fetch(`/api/watermark/encode?pos=x1,y1,x2,y2&scale=${scale}&rotate=${rotate}`, {
                     method: 'POST',
                     // TODO build it to a form data
-                    body: data.blob,
+                    // https://github.com/vercel/examples/blob/main/solutions/aws-s3-image-upload/pages/index.tsx
+                    // https://github.com/vercel/examples/blob/main/storage/blob-starter/components/uploader.tsx
+                    // body: data.blob,
+                    body: formData,
                 }).then(response => alert('Blob Uploaded'))
                     .catch(err => alert(err));
             }

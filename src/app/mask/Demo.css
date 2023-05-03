@@ -1,0 +1,32 @@
+.box {
+    /* display: inline-block; */
+    padding: 10px;
+    box-sizing: border-box;
+}
+.header {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+.container {
+    /* display: flex;
+    align-items: center;
+    justify-content: center; */
+}
+
+.container .left {
+    width: calc(60% - (.5em + 6px));
+    float: left;
+    min-height: 400px;
+    margin-top: 1em;
+}
+
+.container .right {
+    width: calc(40% - (.5em + 6px));
+    float: right;
+    min-height: 400px;
+    margin-top: 1em;
+}
+
+.img-preview {
+    overflow: hidden;
+}
