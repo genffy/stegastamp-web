@@ -162,7 +162,22 @@ export default function IndexMark() {
                     // https://github.com/vercel/examples/blob/main/storage/blob-starter/components/uploader.tsx
                     // body: data.blob,
                     body: formData,
-                }).then(response => alert('Blob Uploaded'))
+                }).then(response => {
+                    console.log(response.body)
+                    if (response && response.body) {
+                        const reader = response.body.getReader();
+                        const decoder = new TextDecoder('utf-8');
+                        reader.read().then(function processText({ done, value }): Promise<void> {
+                          if (done) {
+                            console.log('传输完毕');
+                            return Promise.resolve();
+                          }
+                          console.log('result----', decoder.decode(value));
+                          return reader.read().then(processText);
+                        });
+                      }
+              
+                })
                     .catch(err => alert(err));
             }
             // download image

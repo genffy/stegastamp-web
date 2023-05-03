@@ -27,8 +27,9 @@ def encode_test():
 
 def decode_test():
     # to_decode_img = Image.open("./corp/WX20230426-153306@2x.png")
-    to_decode_img = Image.open('./corp/' + filename + '.png')
-    print(to_decode_img.size)
+    # to_decode_img = Image.open('./corp/' + filename + '.png')
+    to_decode_img = Image.open("./upload/to_decode_image.jpeg")
+    # print(to_decode_img.size)
     code = decode_img(to_decode_img)
     if code:
         print(code)
@@ -139,14 +140,14 @@ def process_image(img_path):
 
 
 if __name__ == "__main__":
-    root_dir = '/path/to/your/img/assets'
-    image_paths = get_image_paths(root_dir)
-    for image_path in image_paths:
-        tile = Path(image_path).stem.split('_')[0]
-        if tile.isnumeric():
-            img = Image.open(image_path)
-            batch_decode(img, int(tile), step=10)
+    # root_dir = '/path/to/your/img/assets'
+    # image_paths = get_image_paths(root_dir)
+    # for image_path in image_paths:
+    #     tile = Path(image_path).stem.split('_')[0]
+    #     if tile.isnumeric():
+    #         img = Image.open(image_path)
+    #         batch_decode(img, int(tile), step=10)
     # encode_test()
-    # decode_test()
+    decode_test()
     # batch_decode()
     # resize_image()

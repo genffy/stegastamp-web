@@ -14,6 +14,7 @@ export default function MaskPage() {
     const [cropData, setCropData] = useState("#");
     const cropperRef = createRef<ReactCropperElement>();
     const [value, setValue, remove] = useLocalStorage('cropperjs_watermark', '');
+    const [decodeData, setDecodeData] = useState('');
     const onChange = (e: any) => {
         e.preventDefault();
         let files;
@@ -30,6 +31,24 @@ export default function MaskPage() {
         reader.readAsDataURL(files[0]);
     };
 
+    document.onpaste = function (event: any) {
+        var items = (event.clipboardData || event.originalEvent.clipboardData).items;
+        console.log(JSON.stringify(items)); // might give you mime types
+        for (var index in items) {
+            var item = items[index];
+            if (item.kind === 'file') {
+                var blob = item.getAsFile();
+                var reader = new FileReader();
+                reader.onload = function (evt: any) {
+                    console.log(evt.target.result); // data url!
+                    setImage(evt.target.result as any);
+                    setValue(evt.target.result as any);
+                }; 
+                reader.readAsDataURL(blob);
+            }
+        }
+    };
+
     const getCropData = () => {
         if (typeof cropperRef.current?.cropper !== "undefined") {
             setCropData(cropperRef.current?.cropper.getCroppedCanvas().toDataURL());
@@ -38,7 +57,39 @@ export default function MaskPage() {
 
     function decodeImage() {
         const imgData = {}
-
+        if (typeof cropperRef.current?.cropper !== "undefined") {
+            const data = cropperRef.current?.cropper.getCroppedCanvas().toDataURL();
+            // Upload cropped image to server if the browser supports `HTMLCanvasElement.toBlob`.
+            // The default value for the second parameter of `toBlob` is 'image/png', change it if necessary.
+            cropperRef.current?.cropper.getCroppedCanvas().toBlob((blob) => {
+                const formData = new FormData();
+                // Pass the image file name as the third parameter if necessary.
+                if(blob){
+                    formData.append('croppedImage', blob/*, 'example.png' */);
+                    setDecodeData('decoding...')
+                    fetch(`/api/watermark/decode`, {
+                        method: 'POST',
+                        body: formData,
+                    }).then(response => {
+                        console.log(response.body)
+                        if (response && response.body) {
+                            const reader = response.body.getReader();
+                            const decoder = new TextDecoder('utf-8');
+                            reader.read().then(function processText({ done, value }): Promise<void> {
+                            if (done) {
+                                console.log('传输完毕');
+                                return Promise.resolve();
+                            }
+                            console.log('result----', decoder.decode(value));
+                            setDecodeData(decoder.decode(value));
+                            return reader.read().then(processText);
+                            });
+                        }
+                    })
+                        .catch(err => alert(err));
+                }
+            }/*, 'image/png' */);
+        }
     }
 
     useEffect(() => {
@@ -83,12 +134,14 @@ export default function MaskPage() {
                     <div
                         className="box"
                     >
-                        <h1 style={{display: }}>
+                        <h1 className="center">
                             <span>Decode</span>
                             <button style={{ float: "right" }} onClick={decodeImage}>
                                 Decode Image
                             </button>
+                            
                         </h1>
+                        <p>{decodeData}</p>
                         {
                             cropData != "#" && <img style={{ width: "100%" }} src={cropData} alt="cropped" />
                         }
