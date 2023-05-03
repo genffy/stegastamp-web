@@ -5,41 +5,56 @@ import math
 
 if __name__ == "__main__":
     img = Image.open('upload/afe84222-69ef-4d13-b66c-7b6b46f8e988.png')
-    img_w = img.size[0]
-    img_h = img.size[1]
+    naturalWidth = img.size[0]
+    naturalHeight = img.size[1]
 
     # 先处理原图
     data = {
-        "width": 209.359375,
-        "height": 209.39736280897367,
-        "x": 0,
-        "y": 175.2628511882866,
+        "cropWidth": 400,
+        "cropHeight": 400,
+        "cropX": 323.5,
+        "cropY": 730.5,
         "pixelRatio": 1.600000023841858,
-        "scale": 1.5,
-        "rotate": -22,
-        "naturalWidth": 1047,
-        "naturalHeight": 1861
+        "scale": 1.4,
+        "rotate": 0,
+        "viewWidth": 1047,
+        "viewHeight": 1861
     }
 
-    width = data.get('width')
-    height = data.get('height')
-    x = data.get('x')
-    y = data.get('y')
+    cropWidth = data.get('cropWidth')
+    cropHeight = data.get('cropHeight')
+    cropX = data.get('cropX')
+    cropY = data.get('cropY')
     pixelRatio = data.get('pixelRatio')
     scale = data.get('scale')
     rotate = data.get('rotate')
-    naturalWidth = data.get('naturalWidth')
-    naturalHeight = data.get('naturalHeight')
-    # 旋转这个没问题
-    img = img.rotate(-rotate, center=(naturalWidth/2, naturalHeight/2))
-    # 放大缩小
-    # img = ImageOps.fit(img, (round(naturalWidth), round(naturalHeight)))
-    # img = ImageOps.fit(img, (round(naturalWidth * scale * pixelRatio), round(naturalHeight * scale * pixelRatio)))
-    # x = x * scale
-    # y = y * scale
-    img = img.crop((x, y, x+width, y+height))
-    img.resize((naturalWidth, naturalHeight), Image.LANCZOS)
-    # img = ImageOps.scale(img, pixelRatio)
-    # img = ImageOps.fit(img, (round(width), round(height)))
-    # img.show()
+    viewWidth = data.get('viewWidth')
+    viewHeight = data.get('viewHeight')
+
+    scaleX = naturalWidth / viewWidth
+    scaleY = naturalHeight / viewHeight
+
+    # scale original image and crop it with natural size
+    # set image to view size
+    img = img.resize((viewWidth, viewHeight))
+    w = viewWidth * scale
+    h = viewHeight * scale
+    # that is ok
+    img = img.rotate(-rotate)
+    if scale >= 1:
+        xw = viewWidth / scale
+        yh = viewHeight / scale
+        xx = int((viewWidth - xw) / 2)
+        yy = int((viewHeight - yh) / 2)
+        img = img.crop((xx, yy, xw, yh))
+    else:
+        img = img.resize((int(w), int(h)))
+    img = img.resize((viewWidth, viewHeight))
+
+    # that is ok
+    cropY = cropY * scaleY * scale / pixelRatio
+    cropX = cropX * scaleX * scale / pixelRatio
+    img = img.crop((cropX, cropY, cropX + cropWidth, cropY + cropHeight))
+    print(img.size, scaleX, scaleY, cropX, cropY, scale, pixelRatio)
+    # img = img.resize((math.floor(cropWidth * scaleX * pixelRatio), math.floor(cropHeight * scaleY * pixelRatio)))
     img.save('upload/crop_afe84222-69ef-4d13-b66c-7b6b46f8e988.png')

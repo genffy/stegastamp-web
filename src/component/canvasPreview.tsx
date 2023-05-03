@@ -3,15 +3,15 @@ import { PixelCrop } from 'react-image-crop'
 const TO_RADIANS = Math.PI / 180
 
 export type PreviewData = {
-    x: number
-    y: number
-    height: number
-    width: number
+    cropX: number
+    cropY: number
+    cropHeight: number
+    cropWidth: number
     scale: number
     pixelRatio: number
     rotate: number
-    naturalWidth: number
-    naturalHeight: number
+    viewWidth: number
+    viewHeight: number
 }
 
 export async function canvasPreview(
@@ -76,14 +76,14 @@ export async function canvasPreview(
     ctx.restore()
     // width, height, x, y
     return {
-        width: crop.width,
-        height: crop.height,
-        x: crop.x,
-        y: crop.y,
+        cropWidth: crop.width,
+        cropHeight: crop.height,
+        cropX: crop.x,
+        cropY: crop.y,
         pixelRatio,
         scale,
         rotate,
-        naturalWidth: image.width,
-        naturalHeight: image.height,
+        viewWidth: image.width,
+        viewHeight: image.height,
     }
 }

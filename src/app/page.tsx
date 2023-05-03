@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef } from 'react'
+import React, {useState, useRef, useEffect} from 'react'
 
 import ReactCrop, {
     centerCrop,
@@ -12,10 +12,10 @@ import { canvasPreview , type PreviewData} from '@/component/canvasPreview'
 
 import 'react-image-crop/dist/ReactCrop.css'
 import '@/app/watermark.css'
-import { useDebounce } from 'react-use'
+import { useDebounce, useLocalStorage } from 'react-use'
 
 // This is to demonstate how to make and center a % aspect crop
-// which is a bit trickier so we use some helper functions.
+// which is a bit trickier, so we use some helper functions.
 function centerAspectCrop(
     mediaWidth: number,
     mediaHeight: number,
@@ -24,10 +24,10 @@ function centerAspectCrop(
     return centerCrop(
         makeAspectCrop(
             {
-                // unit: 'px',
-                // width: 400,
-                unit: '%',
-                width: 20,
+                unit: 'px',
+                width: 400,
+                // unit: '%',
+                // width: 20,
             },
             aspect,
             mediaWidth,
@@ -50,14 +50,16 @@ export default function IndexMark() {
     const [rotate, setRotate] = useState(0)
     const [aspect, setAspect] = useState<number | undefined>(1 / 1)
     const [previewData, setPreviewData] = useState<PreviewData>()
+    const [value, setValue, remove] = useLocalStorage('watermark', '');
 
     function onSelectFile(e: React.ChangeEvent<HTMLInputElement>) {
         if (e.target.files && e.target.files.length > 0) {
             setCrop(undefined) // Makes crop preview update between images.
             const reader = new FileReader()
-            reader.addEventListener('load', () =>
-                setImgSrc(reader.result?.toString() || ''),
-            )
+            reader.addEventListener('load', () => {
+                setImgSrc(reader.result?.toString() || '')
+                setValue(reader.result?.toString() || '')
+            })
             reader.readAsDataURL(e.target.files[0])
         }
     }
@@ -132,8 +134,8 @@ export default function IndexMark() {
             setAspect(undefined)
         } else if (imgRef.current) {
             const { width, height } = imgRef.current
-            setAspect(1 / 1)
-            setCrop(centerAspectCrop(width, height, 1 / 1))
+            setAspect(1)
+            setCrop(centerAspectCrop(width, height, 1))
         }
     }
     // 加密指定区域，返回修改后的图片
@@ -150,6 +152,7 @@ export default function IndexMark() {
                 // how to convert completedCrop and previewData to position
                 fetch(`/api/watermark/encode?pos=x1,y1,x2,y2&scale=${scale}&rotate=${rotate}`, {
                     method: 'POST',
+                    // TODO build it to a form data
                     body: data.blob,
                 }).then(response => alert('Blob Uploaded'))
                     .catch(err => alert(err));
@@ -169,6 +172,9 @@ export default function IndexMark() {
         }
     }
 
+    useEffect(() => {
+        setImgSrc(value || '')
+    }, [imgSrc])
     return (
         <div className="App">
             <div className="Crop-Controls">
