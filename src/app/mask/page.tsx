@@ -5,6 +5,7 @@ import Cropper, { ReactCropperElement } from "react-cropper";
 import "cropperjs/dist/cropper.css";
 import "./Demo.css";
 import { useLocalStorage } from "react-use";
+import { fetchWithTimeout } from "@/utils";
 
 const defaultSrc =
     "https://raw.githubusercontent.com/roadmanfong/react-cropper/master/example/img/child.jpg";
@@ -31,23 +32,29 @@ export default function MaskPage() {
         reader.readAsDataURL(files[0]);
     };
 
-    document.onpaste = function (event: any) {
-        var items = (event.clipboardData || event.originalEvent.clipboardData).items;
-        console.log(JSON.stringify(items)); // might give you mime types
-        for (var index in items) {
-            var item = items[index];
-            if (item.kind === 'file') {
-                var blob = item.getAsFile();
-                var reader = new FileReader();
-                reader.onload = function (evt: any) {
-                    console.log(evt.target.result); // data url!
-                    setImage(evt.target.result as any);
-                    setValue(evt.target.result as any);
-                }; 
-                reader.readAsDataURL(blob);
+    function listenOnPaste() {
+        document.onpaste = function (event: any) {
+            var items = (event.clipboardData || event.originalEvent.clipboardData).items;
+            console.log(JSON.stringify(items)); // might give you mime types
+            for (var index in items) {
+                var item = items[index];
+                if (item.kind === 'file') {
+                    var blob = item.getAsFile();
+                    var reader = new FileReader();
+                    reader.onload = function (evt: any) {
+                        console.log(evt.target.result); // data url!
+                        setImage(evt.target.result as any);
+                        setValue(evt.target.result as any);
+                    }; 
+                    reader.readAsDataURL(blob);
+                }
             }
-        }
-    };
+        };
+    }
+
+    useEffect(()=>{
+        listenOnPaste()
+    })
 
     const getCropData = () => {
         if (typeof cropperRef.current?.cropper !== "undefined") {
@@ -61,32 +68,49 @@ export default function MaskPage() {
             const data = cropperRef.current?.cropper.getCroppedCanvas().toDataURL();
             // Upload cropped image to server if the browser supports `HTMLCanvasElement.toBlob`.
             // The default value for the second parameter of `toBlob` is 'image/png', change it if necessary.
-            cropperRef.current?.cropper.getCroppedCanvas().toBlob((blob) => {
+            cropperRef.current?.cropper.getCroppedCanvas().toBlob(async (blob) => {
                 const formData = new FormData();
                 // Pass the image file name as the third parameter if necessary.
                 if(blob){
                     formData.append('croppedImage', blob/*, 'example.png' */);
                     setDecodeData('decoding...')
-                    fetch(`/api/watermark/decode`, {
+                    const response = await fetchWithTimeout(`/api/watermark/decode`, {
                         method: 'POST',
                         body: formData,
-                    }).then(response => {
-                        console.log(response.body)
-                        if (response && response.body) {
-                            const reader = response.body.getReader();
-                            const decoder = new TextDecoder('utf-8');
-                            reader.read().then(function processText({ done, value }): Promise<void> {
-                            if (done) {
-                                console.log('传输完毕');
-                                return Promise.resolve();
-                            }
-                            console.log('result----', decoder.decode(value));
-                            setDecodeData(decoder.decode(value));
-                            return reader.read().then(processText);
-                            });
-                        }
                     })
-                        .catch(err => alert(err));
+                    if (response && response.body) {
+                        const reader = response.body.getReader();
+                        const decoder = new TextDecoder('utf-8');
+                        reader.read().then(function processText({ done, value }): Promise<void> {
+                        if (done) {
+                            console.log('传输完毕');
+                            return Promise.resolve();
+                        }
+                        console.log('result----', decoder.decode(value));
+                        setDecodeData(decoder.decode(value));
+                        return reader.read().then(processText);
+                        });
+                    }
+                    // fetch(`/api/watermark/decode`, {
+                    //     method: 'POST',
+                    //     body: formData,
+                    // }).then(response => {
+                    //     console.log(response.body)
+                    //     if (response && response.body) {
+                    //         const reader = response.body.getReader();
+                    //         const decoder = new TextDecoder('utf-8');
+                    //         reader.read().then(function processText({ done, value }): Promise<void> {
+                    //         if (done) {
+                    //             console.log('传输完毕');
+                    //             return Promise.resolve();
+                    //         }
+                    //         console.log('result----', decoder.decode(value));
+                    //         setDecodeData(decoder.decode(value));
+                    //         return reader.read().then(processText);
+                    //         });
+                    //     }
+                    // })
+                    //     .catch(err => alert(err));
                 }
             }/*, 'image/png' */);
         }

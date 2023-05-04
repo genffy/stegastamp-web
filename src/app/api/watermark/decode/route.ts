@@ -2,9 +2,6 @@ import fs from 'node:fs'
 import { Writable } from "node:stream";
 import { exec } from "child_process";
 import util from "node:util";
-export const api = {
-  bodyParser: false,
-};
 const promiseExec = util.promisify(exec);
 
 export async function POST(req: Request, res: Response) {
@@ -27,12 +24,22 @@ export async function POST(req: Request, res: Response) {
     const webWritableStream = Writable.toWeb(destination);
     fileStream.pipeTo(webWritableStream);
     destination.on("finish", async (d: any) => {
-      console.log('done1', Date.now())
-      const { stdout, stderr } = await promiseExec(`python3.10 test.py`);
-      console.log(stdout, controller);
-      controller.enqueue(encoder.encode(`${stdout}\n\n`));
+      const abort = new AbortController();
+      const { signal } = abort;
+      try {
+        const id = setTimeout(() => abort.abort(), 10000);
+        const { stdout, stderr } = await promiseExec(`python3.10 test.py`, {
+          signal,
+          // timeout: 10000,
+        });
+        clearTimeout(id)
+        console.log(stdout, stderr)
+        controller.enqueue(encoder.encode(`${stdout}\n\n`));
+      } catch (error) {
+        console.log(error)
+        controller.enqueue(encoder.encode(`timeout`));
+      }
     });
-    console.log('done2', Date.now())
     destination.on("error", () => {
       console.log("error");
     });

@@ -69,7 +69,7 @@ def batch_decode(img, tile_size=400, step=2, logger=False):
             if code:
                 print('image position', x1, y1, x2, y2)
                 print(code)
-                tile.save(f'corp/decode/{code}_{i}_{j}_{x1}_{y1}_{x2}_{y2}.png')
+                tile.save(f'corp/decode/{i}_{j}_{x1}_{y1}_{x2}_{y2}.png')
 
     print('done')
 
@@ -140,14 +140,13 @@ def process_image(img_path):
 
 
 if __name__ == "__main__":
-    # root_dir = '/path/to/your/img/assets'
-    # image_paths = get_image_paths(root_dir)
-    # for image_path in image_paths:
-    #     tile = Path(image_path).stem.split('_')[0]
-    #     if tile.isnumeric():
-    #         img = Image.open(image_path)
-    #         batch_decode(img, int(tile), step=10)
+    root_dir = '/path/to/your/img/assets'
+    image_paths = get_image_paths(root_dir)
+    for image_path in image_paths:
+        img = Image.open(image_path)
+        for tile in range(5, 15):
+            batch_decode(img, int(tile), step=3)
     # encode_test()
-    decode_test()
+    # decode_test()
     # batch_decode()
     # resize_image()

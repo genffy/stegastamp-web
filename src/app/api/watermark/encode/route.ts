@@ -2,11 +2,9 @@ import { Writable } from "node:stream";
 import formidable from "formidable";
 import path from "path";
 import fs from "node:fs";
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+// export const api = {
+//   bodyParser: false,
+// };
 export async function POST(req: Request, res: Response) {
   const data: FormData = await req.formData();
   // how to save image from blob
