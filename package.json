@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "serve": "pm2 start ecosystem.config.js",
+    "deploy": "npm run build && npm run serve"
   },
   "dependencies": {
     "@types/node": "18.16.1",
