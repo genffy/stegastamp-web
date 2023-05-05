@@ -15,6 +15,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      {/* TODO */}
+      <head>
+        <link rel="stylesheet" href="css/bootstrap.min.css" />
+        <link rel="stylesheet" href="css/fontawesome.css" />
+      </head>
       <body className={inter.className}>{children}</body>
     </html>
   )
