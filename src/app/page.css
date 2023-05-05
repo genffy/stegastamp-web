@@ -1,3 +1,6 @@
+.container {
+    padding: 1rem;
+}
 .btn {
     padding-left: 0.75rem;
     padding-right: 0.75rem;

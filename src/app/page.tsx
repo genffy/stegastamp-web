@@ -6,6 +6,7 @@ import { useDebounce, useLocalStorage } from 'react-use'
 
 import "cropperjs/dist/cropper.css";
 import './page.css'
+import { fetchWithTimeout } from '@/utils';
 
 const defaultSrc =
     "images/child.jpg";
@@ -267,12 +268,6 @@ export default function App() {
                                     throw new Error('Failed to create blob')
                                 }
                                 onDownloadCropClick(blob)
-                                // if (blobUrlRef.current) {
-                                //     URL.revokeObjectURL(blobUrlRef.current)
-                                // }
-                                // blobUrlRef.current = URL.createObjectURL(blob)
-                                // hiddenAnchorRef.current!.href = blobUrlRef.current
-                                // hiddenAnchorRef.current!.click()
                             })
                         }
 
@@ -344,10 +339,64 @@ export default function App() {
     }
 
     const handleChange = () => { }
+    const [decodeData, setDecodeData] = useState('Hello1234');
+    const handleDecode = () => {
+        // get corp data
+        // call decode api
+        // return code
+        if (cropper) {
+            // Upload cropped image to server if the browser supports `HTMLCanvasElement.toBlob`.
+            // The default value for the second parameter of `toBlob` is 'image/png', change it if necessary.
+            cropper.getCroppedCanvas().toBlob(async (blob) => {
+                const formData = new FormData();
+                // Pass the image file name as the third parameter if necessary.
+                if (blob) {
+                    formData.append('imageFile', blob);
+                    formData.append('type', 'decode');
+                    setDecodeData('decoding...')
+                    const { result } = await fetchWithTimeout(`/api/watermark`, {
+                        method: 'POST',
+                        body: formData,
+                    }).then(res => res.json());
+                    if (result) {
 
+                        setDecodeData(result);
+                    }
+
+                }
+            });
+        }
+    }
+    const [encodeData, setEncodeData] = useState(defaultSrc);
+    const downloadAnchorRef = useRef<HTMLAnchorElement>(null);
+    const handleEncode = () => {
+        //TODO how to upload image
+        // post selected area data
+        // decode selected area
+        // return new image
+        if (cropper) {
+            cropper.getCroppedCanvas().toBlob(async (blob) => {
+                const formData = new FormData();
+                // Pass the image file name as the third parameter if necessary.
+                if (blob) {
+                    formData.append('imageFile', blob);
+                    formData.append('type', 'encode');
+                    formData.append('secret', 'encode123');
+                    const { result } = await fetchWithTimeout(`/api/watermark`, {
+                        method: 'POST',
+                        body: formData,
+                    }).then(res => res.json());
+                    if (result) {
+                        setEncodeData(result);
+                    }
+                }
+            });
+        }
+    }
+    console.log('cropper', cropper)
     return (
         <>
-            <div className='container mx-auto'>
+            <div className='container'>
                 <div className="row">
                     <div className="col-9">
                         <div className="docs-demo">
@@ -593,7 +642,7 @@ export default function App() {
                     <div className="col-3 docs-toggles">
                         {/* <!-- <h3>Toggles:</h3> --> */}
                         <div className="btn-group d-flex flex-nowrap" data-toggle="buttons">
-                            <label onClick={(e) => handleToggles(e)} className="btn btn-primary active">
+                            <label onClick={(e) => handleToggles(e)} className="btn btn-primary">
                                 <input type="radio" onChange={handleChange} className="sr-only" id="aspectRatio1" name="aspectRatio" value="1.7777777777777777" />
                                 <span className="docs-tooltip" data-toggle="tooltip" title="aspectRatio: 16 / 9">
                                     16:9
@@ -605,7 +654,7 @@ export default function App() {
                                     4:3
                                 </span>
                             </label>
-                            <label onClick={(e) => handleToggles(e)} className="btn btn-primary">
+                            <label onClick={(e) => handleToggles(e)} className="btn btn-primary active">
                                 <input type="radio" onChange={handleChange} className="sr-only" id="aspectRatio3" name="aspectRatio" value="1" />
                                 <span className="docs-tooltip" data-toggle="tooltip" title="aspectRatio: 1 / 1">
                                     1:1
@@ -651,6 +700,34 @@ export default function App() {
                                 </span>
                             </label>
                         </div>
+                        <div className='d-flex flex-nowrap'>
+                            <button type="button" onClick={handleEncode} className="btn btn-warning" data-method="getData" data-option data-target="#putData">
+                                <span className="docs-tooltip" data-toggle="tooltip" title="cropper.getData()">
+                                    Encode
+                                </span>
+                            </button>
+                            &nbsp;&nbsp;
+                            <button type="button" onClick={handleDecode} className="btn btn-danger" data-method="getData" data-option data-target="#putData">
+                                <span className="docs-tooltip" data-toggle="tooltip" title="cropper.getData()">
+                                    Decode
+                                </span>
+                            </button>
+                        </div>
+                        {/* decode data */}
+                        {
+                            decodeData && <div className='text-center'>{decodeData}</div>
+                        }
+                        {/* encode preview */}
+                        {
+                            encodeData && <div className='text-center'>
+                                <img className='img-fluid' src={encodeData} alt="encode preview" />
+                                <a
+                                    className='icon-link icon-link-hover fa fa-download'
+                                    ref={downloadAnchorRef}
+                                    download={uploadedImageName}
+                                >download</a>
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
