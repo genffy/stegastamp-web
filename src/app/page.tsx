@@ -198,95 +198,18 @@ export default function IndexMark() {
     useEffect(() => {
         setImgSrc(value || '')
     }, [imgSrc])
-    return (
-        <div className="App">
-            <div className="Crop-Controls">
-                <input type="file" accept="image/*" onChange={onSelectFile} />
-                <div>
-                    <label htmlFor="scale-input">Scale: </label>
-                    <input
-                        id="scale-input"
-                        type="number"
-                        step="0.1"
-                        value={scale}
-                        disabled={!imgSrc}
-                        onChange={(e) => setScale(Number(e.target.value))}
-                    />
-                </div>
-                <div>
-                    <label htmlFor="rotate-input">Rotate: </label>
-                    <input
-                        id="rotate-input"
-                        type="number"
-                        value={rotate}
-                        disabled={!imgSrc}
-                        onChange={(e) =>
-                            setRotate(Math.min(180, Math.max(-180, Number(e.target.value))))
-                        }
-                    />
-                </div>
-                <div>
-                    <button onClick={handleToggleAspectClick}>
-                        Toggle aspect {aspect ? 'off' : 'on'}
-                    </button>
-                </div>
-            </div>
-            <div className='container'>
-                <div className='left'>
-                    {!!imgSrc && (
-                        <ReactCrop
-                            crop={crop}
-                            onChange={(_, percentCrop) => setCrop(percentCrop)}
-                            onComplete={(c) => setCompletedCrop(c)}
-                            aspect={aspect}
-                            locked={true}
-                        >
-                            <img
-                                ref={imgRef}
-                                alt="Crop me"
-                                src={imgSrc}
-                                style={{ transform: `scale(${scale}) rotate(${rotate}deg)` }}
-                                onLoad={onImageLoad}
-                            />
-                        </ReactCrop>
-                    )}
-                </div>
-                <div className='right'>
-                    {!!completedCrop && (
-                        <>
-                            <div>
-                                <canvas
-                                    ref={previewCanvasRef}
-                                    style={{
-                                        border: '1px solid black',
-                                        objectFit: 'contain',
-                                        width: completedCrop.width,
-                                        height: completedCrop.height,
-                                    }}
-                                />
-                            </div>
-                            <div>
-                                {/* encode success then can download */}
-                                <button onClick={onEncodeCropClick}>加密选择区域</button>
-                                <button onClick={onDownloadCropClick}>加载加密图片</button>
 
-                                <button onClick={onDecodeCropClick}>解密选择区域</button>
-                                <a
-                                    ref={hiddenAnchorRef}
-                                    download
-                                    style={{
-                                        position: 'absolute',
-                                        top: '-200vh',
-                                        visibility: 'hidden',
-                                    }}
-                                >
-                                    Hidden download
-                                </a>
-                            </div>
-                        </>
-                    )}
+    return (
+        <div className='container'>
+            <div className=''>
+                <div className='main'>
+
+                </div>
+                <div className='preview'>
+                    
                 </div>
             </div>
+            <div className=''></div>
         </div>
     )
 }
