@@ -7,7 +7,8 @@ import { getMd5 } from '@/utils';
 import { NextResponse } from 'next/server';
 
 const promiseExec = util.promisify(exec);
-const UPLOAD_DIR = `${process.cwd()}/public/upload`;
+const PUBLIC_ROOT = `${process.cwd()}/public`;
+const UPLOAD_DIR = `${PUBLIC_ROOT}/upload`;
 
 function promisifySaveFile(file: Blob): Promise<string> {
   return new Promise(async (resolve, reject) => {
@@ -30,11 +31,11 @@ function promisifySaveFile(file: Blob): Promise<string> {
   });
 }
 // return image data
-async function handleEncoder(filePath: string, secret: string, select: string) {
+async function handleEncoder(filePath: string, secret: string, select='0,0,400,400') {
   let data = filePath
   try {
     const { signal, clearTimer } = abortSignal()
-    const { stdout, stderr } = await promiseExec(`python3.10 web_encode.py --image ${filePath} --secret ${secret} --select ${select}`, {
+    const { stdout, stderr } = await promiseExec(`python3.10 web_encode.py --image ${filePath} --secret ${secret} --select '${select}'`, {
       signal,
     });
     clearTimer()
@@ -43,7 +44,7 @@ async function handleEncoder(filePath: string, secret: string, select: string) {
   } catch (error) {
     console.log(error)
   }
-  return data
+  return data.replace(PUBLIC_ROOT, '')
 }
 // return decode text or empty
 async function handleDecoder(filePath: string) {

@@ -39,7 +39,7 @@ export async function addWaterMarker(file: Blob, text: string, el = '#markImg') 
       canvas.height = canvas.width / imgRatio
 
       let ctx = canvas.getContext('2d')
-      if(!ctx){
+      if (!ctx) {
         return reject('canvas获取失败')
       }
 
