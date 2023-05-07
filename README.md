@@ -23,7 +23,7 @@ pnpm dev
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 ## Usage
-<iframe src="https://drive.google.com/file/d/1bE05HVBDDCZzfNq8l5II1vKmSTg4qfgU/view?usp=share_link" width="640" height="480"></iframe>      
+![stegastamp-web-usage](https://drive.google.com/uc?id=1bE05HVBDDCZzfNq8l5II1vKmSTg4qfgU)
 
 ## Deploy
 TODO
