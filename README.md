@@ -23,7 +23,7 @@ pnpm dev
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 ## Usage
-![stegastamp-web-usage](https://drive.google.com/uc?id=1bE05HVBDDCZzfNq8l5II1vKmSTg4qfgU)
+![stegastamp-web-usage](https://user-images.githubusercontent.com/1506972/236694589-16ae6fd2-0c91-42dc-920c-79ae76092af3.gif)
 
 ## Deploy
 TODO
