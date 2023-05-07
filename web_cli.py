@@ -1,7 +1,7 @@
 import argparse
 import os
 from PIL import Image
-from encode_decode_fn import decode_img, encode_img, has_transparency
+from encode_decode_fn import decode_img, encode_img
 # args
 parser = argparse.ArgumentParser()
 parser.add_argument('--image', type=str, default=None)

@@ -333,7 +333,7 @@ export default function App() {
                     const formData = new FormData();
                     formData.append('imageFile', blob);
                     formData.append('type', 'encode');
-                    formData.append('secret', 'encode123');
+                    formData.append('secret', decodeData);
                     const {left, top, width, height} = cropper.getCropBoxData();
                     // left, top, right, bottom
                     formData.append('crop', `${Math.round(left)},${Math.round(top)},${Math.round(width+left)},${Math.round(height+top)}`);

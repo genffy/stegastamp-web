@@ -35,7 +35,7 @@ async function handleEncoder(filePath: string, secret: string, select='0,0,400,4
   let data = filePath
   try {
     const { signal, clearTimer } = abortSignal()
-    const { stdout, stderr } = await promiseExec(`python3.10 web_cli.py --type encode --image ${filePath} --secret ${secret} --select '${select}'`, {
+    const { stdout, stderr } = await promiseExec(`python web_cli.py --type encode --image ${filePath} --secret ${secret} --select '${select}'`, {
       signal,
     });
     clearTimer()
@@ -51,7 +51,7 @@ async function handleDecoder(filePath: string) {
   let data = ''
   try {
     const { signal, clearTimer } = abortSignal()
-    const { stdout, stderr } = await promiseExec(`python3.10 web_cli.py --type decode --image ${filePath}`, {
+    const { stdout, stderr } = await promiseExec(`python web_cli.py --type decode --image ${filePath}`, {
       signal,
     });
     clearTimer()
