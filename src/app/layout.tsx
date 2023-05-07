@@ -1,11 +1,9 @@
 import './globals.css'
-import { Inter } from 'next/font/google'
-
-const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
   title: 'Stegastamp',
   description: 'Invisible Hyperlinks in Physical Photographs',
+  icons: '/favicon.png'
 }
 
 export default function RootLayout({
@@ -20,7 +18,7 @@ export default function RootLayout({
         <link rel="stylesheet" href="css/bootstrap.min.css" />
         <link rel="stylesheet" href="css/fontawesome.css" />
       </head>
-      <body className={inter.className}>{children}</body>
+      <body>{children}</body>
     </html>
   )
 }

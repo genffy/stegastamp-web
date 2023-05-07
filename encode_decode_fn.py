@@ -1,10 +1,7 @@
 import bchlib
-import glob
-import os
 from PIL import Image,ImageOps, ImageChops
 import numpy as np
 import tensorflow as tf
-# import tensorflow.contrib.image
 from tensorflow.python.saved_model import tag_constants
 from tensorflow.python.saved_model import signature_constants
 
@@ -31,19 +28,19 @@ output_secret = tf.compat.v1.get_default_graph().get_tensor_by_name(output_secre
 # https://github.com/tancik/StegaStamp/issues/43
 width = 400
 height = 400
-
 bch = bchlib.BCH(BCH_POLYNOMIAL, BCH_BITS)
-# secret
-secret_str="hello12"
-data = bytearray(secret_str + ' '*(7-len(secret_str)), 'utf-8')
-ecc = bch.encode(data)
-packet = data + ecc
-
-packet_binary = ''.join(format(x, '08b') for x in packet)
-secret = [int(x) for x in packet_binary]
-secret.extend([0,0,0,0])
-
 size = (width, height)
+
+def get_secrect(secret_str='Stega!!'):
+    data = bytearray(secret_str + ' '*(7-len(secret_str)), 'utf-8')
+    ecc = bch.encode(data)
+    packet = data + ecc
+
+    packet_binary = ''.join(format(x, '08b') for x in packet)
+    secret = [int(x) for x in packet_binary]
+    secret.extend([0,0,0,0])
+    return secret
+
 def trim_and_convert(im):
     bg = Image.new(im.mode, im.size, (255,255,255,0))
     diff = ImageChops.difference(im, bg)
@@ -56,8 +53,8 @@ def trim_and_convert(im):
         print('pure convert')
         return im.convert('RGB')
 
-def encode_img(input_img):
-    # image = trim_and_convert(input_img)
+def encode_img(input_img, secret_str):
+    secret = get_secrect(secret_str)
     image = input_img.convert("RGB")
     image = np.array(ImageOps.fit(image, size),dtype=np.float32)
     image /= 255.
@@ -100,9 +97,7 @@ def decode_img(input_img):
             code = data.decode("utf-8")
             return code
         except:
-            # print('Failed to decode')
             return None
-    # print('Failed to decode')
     return None
 
 def has_transparency(img):

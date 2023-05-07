@@ -41,7 +41,6 @@ def batch_decode(img, tile_size=400, step=2, logger=False):
     # Get the dimensions of the input image
     width, height = img.size
     # Set the size of the square tiles
-    # 这里需要动态计算,画图时按照 400的，但是经过拍照之后，可能不是 400 
     # tile_size = 54
     # Loop over the tiles and save each one as a separate image
     # step = 2
@@ -70,9 +69,49 @@ def batch_decode(img, tile_size=400, step=2, logger=False):
                 print('image position', x1, y1, x2, y2)
                 print(code)
                 tile.save(f'corp/decode/{i}_{j}_{x1}_{y1}_{x2}_{y2}.png')
-
     print('done')
 
+def batch_encode(img, secret_str, tile_size=400):
+    # Get the dimensions of the input image
+    width, height = img.size
+    # Calculate the number of tiles in each dimension
+    num_tiles_x = width // tile_size
+    num_tiles_y = height // tile_size
+    print(width, height, num_tiles_x, num_tiles_y)
+
+    # Loop over the tiles and save each one as a separate image
+    new_image = img.copy()
+    for i in range(num_tiles_x):
+        x1 = i * tile_size
+        x2 = x1 + tile_size
+        if x2 > width or x1 > width - tile_size:
+            continue
+        for j in range(num_tiles_y):
+            # Calculate the top-left corner of the current tile
+            y1 = j * tile_size
+            # Calculate the bottom-right corner of the current tile
+            y2 = y1 + tile_size
+
+            if y2 > height or y1 > height - tile_size:
+                continue
+            # print('x1, y1, x2, y2')
+            # print(x1, y1, x2, y2)
+            # Crop the current tile from the input image
+            tile = new_image.crop((x1, y1, x2, y2))
+            # # Save the current tile as a separate image
+            im_hidden, im_residual = encode_img(tile, secret_str)
+            # bg = Image.new(im.mode, im.size, (255,255,255,0))
+            # diff = ImageChops.difference(tile, im_hidden)
+            # print(diff)
+            # im_hidden.save(f'corp/spilt/tile_{i}_{j}.png')
+            img.paste(im_hidden, (x1, y1, x2, y2))
+            # if im_hidden:
+            #     # encode_img.show()
+            #     im_hidden.save(f'corp/tile_{i}_{j}.png')
+            #     im_residual.save(f'corp/tile_{i}_{j}_residual.png')
+            # else:
+            #     tile.save(f'corp/tile_{i}_{j}.png')
+    return img
 
 def resize_image():
     img = Image.open('./corp/logo-1_hidden.png')
@@ -114,7 +153,7 @@ def encode_for4(img):
         tile = tile.resize((model_size, model_size))
         im_hidden, im_residual = encode_img(tile)
         if im_hidden:
-            # 如果有透明图层，记得写回去
+            # if has alpha layer, remember put it back
             if has_transparency(tile):
                 alpha_channel_save = tile.getchannel('A')
                 r, g, b = im_hidden.split()

@@ -1,99 +1,16 @@
 'use client'
 
 import React, { useState, useRef, useEffect, createRef } from 'react'
-import Cropper, { type ReactCropperElement, type ReactCropperProps } from "react-cropper";
-import { useDebounce, useLocalStorage } from 'react-use'
+import Cropper, { type ReactCropperElement } from "react-cropper";
+import { useLocalStorage } from 'react-use'
 
 import "cropperjs/dist/cropper.css";
 import './page.css'
 import { fetchWithTimeout } from '@/utils';
+import PreviewData, { type CropDataType } from '@/component/preview-data';
 
 const defaultSrc =
     "images/child.jpg";
-
-// dataX.value = Math.round(data.x);
-// dataY.value = Math.round(data.y);
-// dataHeight.value = Math.round(data.height);
-// dataWidth.value = Math.round(data.width);
-// dataRotate.value = typeof data.rotate !== 'undefined' ? data.rotate : '';
-// dataScaleX.value = typeof data.scaleX !== 'undefined' ? data.scaleX : '';
-// dataScaleY.value = typeof data.scaleY !== 'undefined' ? data.scaleY : '';
-type CropDataType = {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-    rotate: number | '';
-    scaleX: number | '';
-    scaleY: number | '';
-}
-
-function PreviewData({ cropData }: { cropData: CropDataType }) {
-    const data = cropData || {} as CropDataType;
-    const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        console.log(e.target.value)
-    }
-    const mathRound = (val: number) => Math.round(val)
-    return <div className="docs-data">
-        <div className="input-group input-group-sm">
-            <span className="input-group-prepend">
-                <label className="input-group-text" htmlFor="dataX">X</label>
-            </span>
-            <input type="text" className="form-control" id="dataX" onChange={onChange} value={mathRound(data.x)} placeholder="x" />
-            <span className="input-group-append">
-                <span className="input-group-text">px</span>
-            </span>
-        </div>
-        <div className="input-group input-group-sm">
-            <span className="input-group-prepend">
-                <label className="input-group-text" htmlFor="dataY">Y</label>
-            </span>
-            <input type="text" className="form-control" id="dataY" onChange={onChange} value={mathRound(data.y)} placeholder="y" />
-            <span className="input-group-append">
-                <span className="input-group-text">px</span>
-            </span>
-        </div>
-        <div className="input-group input-group-sm">
-            <span className="input-group-prepend">
-                <label className="input-group-text" htmlFor="dataWidth">Width</label>
-            </span>
-            <input type="text" className="form-control" id="dataWidth" onChange={onChange} value={mathRound(data.width)} placeholder="width" />
-            <span className="input-group-append">
-                <span className="input-group-text">px</span>
-            </span>
-        </div>
-        <div className="input-group input-group-sm">
-            <span className="input-group-prepend">
-                <label className="input-group-text" htmlFor="dataHeight">Height</label>
-            </span>
-            <input type="text" className="form-control" id="dataHeight" onChange={onChange} value={mathRound(data.height)} placeholder="height" />
-            <span className="input-group-append">
-                <span className="input-group-text">px</span>
-            </span>
-        </div>
-        <div className="input-group input-group-sm">
-            <span className="input-group-prepend">
-                <label className="input-group-text" htmlFor="dataRotate">Rotate</label>
-            </span>
-            <input type="text" className="form-control" id="dataRotate" onChange={onChange} value={data.rotate} placeholder="rotate" />
-            <span className="input-group-append">
-                <span className="input-group-text">deg</span>
-            </span>
-        </div>
-        <div className="input-group input-group-sm">
-            <span className="input-group-prepend">
-                <label className="input-group-text" htmlFor="dataScaleX">ScaleX</label>
-            </span>
-            <input type="text" className="form-control" id="dataScaleX" onChange={onChange} value={data.scaleX} placeholder="scaleX" />
-        </div>
-        <div className="input-group input-group-sm">
-            <span className="input-group-prepend">
-                <label className="input-group-text" htmlFor="dataScaleY">ScaleY</label>
-            </span>
-            <input type="text" className="form-control" id="dataScaleY" onChange={onChange} value={data.scaleY} placeholder="scaleY" />
-        </div>
-    </div>
-}
 
 export default function App() {
     const cropperRef = createRef<ReactCropperElement>();
@@ -103,12 +20,58 @@ export default function App() {
     const [cropData, setCropData] = useState<CropDataType>({ x: 0, y: 0, width: 0, height: 0, rotate: '', scaleX: '', scaleY: '' });
     const [uploadedImageType, setUploadedImageType] = useState('image/jpeg');
     const [uploadedImageName, setUploadedImageName] = useState('cropped.jpg');
-    const [lsValue, setLsValue, removeLsValue] = useLocalStorage('cropperjs_watermark', '');
+    const [lsValue, setLsValue] = useLocalStorage('cropperjs_watermark', '');
     const [options, setOptions] = useState<Record<string, any>>({
         viewMode: 0,
         aspectRatio: 1 / 1,
     })
-    const onCrop = (e: CustomEvent) => {
+    function getManipulatedImage() {
+        // @ts-ignore
+        if (cropper?.canvas) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d')
+            if (!ctx) {
+                throw new Error('No 2d context')
+            }
+            // @ts-ignore
+            const img = cropper.element; // origin image
+            // const img = cropper.image; // real show
+            const imageData = cropper.getImageData();
+            const canvasData = cropper.getCanvasData();
+            const containerData = cropper.getContainerData();
+           
+            // canvas size is container size
+            canvas.width = containerData.width
+            canvas.height = containerData.height
+
+            ctx.save();
+            // move canvas data
+            // NOTE: imageDate left and top is relative to canvasData
+            // ref: https://github.com/fengyuanchen/cropperjs/blob/v1.5.13/src/js/render.js#L296
+            ctx.translate(canvasData.left+imageData.left, canvasData.top+imageData.top);
+            // to center
+            const centerX = imageData.width / 2
+            const centerY = imageData.height / 2
+            // draw image
+            ctx.translate(centerX, centerY);
+            const TO_RADIANS = Math.PI / 180
+            const rotateRads = imageData.rotate * TO_RADIANS
+            ctx.rotate(rotateRads);
+            ctx.scale(imageData.scaleX, imageData.scaleY);
+            // back to origin
+            ctx.translate(-centerX, -centerY);
+            ctx.drawImage(
+                img,
+                0,
+                0,
+                imageData.width,
+                imageData.height,
+            )
+            ctx.restore();
+            return canvas;
+        }
+    }
+    const onCrop = async (e: CustomEvent) => {
         var data = e.detail;
         setCropData({ ...data });
     }
@@ -130,11 +93,10 @@ export default function App() {
         setLsValue(str);
     }
 
-    function _processFile(blob: Blob) {
+    function _processFile(blob: Blob, func = (_args: any) => { }) {
         var reader = new FileReader();
         reader.onload = function (evt: any) {
-            console.log(evt.target.result); // data url!
-            syncData(evt.target.result as any);
+            func && func(evt.target.result as any);
         };
         reader.readAsDataURL(blob);
     }
@@ -159,7 +121,7 @@ export default function App() {
             } else {
                 window.alert('Please choose an image file.');
             }
-            _processFile(file)
+            _processFile(file, syncData)
         }
     }
     // process paste
@@ -171,7 +133,7 @@ export default function App() {
                 var item = items[index];
                 if (item.kind === 'file') {
                     var blob = item.getAsFile();
-                    _processFile(blob)
+                    _processFile(blob, syncData)
                 }
             }
         };
@@ -192,10 +154,6 @@ export default function App() {
     }, [cropperRef])
 
     const handleActions = (event: React.MouseEvent<HTMLButtonElement>) => {
-        // if (!cropperRef.current?.cropper) {
-        //     return;
-        // }
-        // setCropper(cropperRef.current.cropper)
         const target = event.currentTarget;
         const data: any = {
             method: target.getAttribute('data-method'),
@@ -218,7 +176,8 @@ export default function App() {
                         }
                     }
                 }
-                cropped = true // cropper.cropped;
+                // @ts-ignore
+                cropped = cropper.cropped;
 
                 switch (data.method) {
                     case 'rotate':
@@ -333,7 +292,6 @@ export default function App() {
 
             // Restart
             // cropper.destroy();
-            console.log('ops', ops)
             setOptions({ ...options, ...ops })
         }
     }
@@ -341,9 +299,6 @@ export default function App() {
     const handleChange = () => { }
     const [decodeData, setDecodeData] = useState('Hello1234');
     const handleDecode = () => {
-        // get corp data
-        // call decode api
-        // return code
         if (cropper) {
             // Upload cropped image to server if the browser supports `HTMLCanvasElement.toBlob`.
             // The default value for the second parameter of `toBlob` is 'image/png', change it if necessary.
@@ -370,18 +325,18 @@ export default function App() {
     const [encodeData, setEncodeData] = useState(defaultSrc);
     const downloadAnchorRef = useRef<HTMLAnchorElement>(null);
     const handleEncode = () => {
-        //TODO how to upload image
-        // post selected area data
-        // decode selected area
-        // return new image
-        if (cropper) {
-            cropper.getCroppedCanvas().toBlob(async (blob) => {
-                const formData = new FormData();
+        const _img = getManipulatedImage();
+        if (cropper && _img) {
+            _img.toBlob(async (blob) => {
                 // Pass the image file name as the third parameter if necessary.
                 if (blob) {
+                    const formData = new FormData();
                     formData.append('imageFile', blob);
                     formData.append('type', 'encode');
                     formData.append('secret', 'encode123');
+                    const {left, top, width, height} = cropper.getCropBoxData();
+                    // left, top, right, bottom
+                    formData.append('crop', `${Math.round(left)},${Math.round(top)},${Math.round(width+left)},${Math.round(height+top)}`);
                     const { result } = await fetchWithTimeout(`/api/watermark`, {
                         method: 'POST',
                         body: formData,
@@ -393,7 +348,6 @@ export default function App() {
             });
         }
     }
-    console.log('cropper', cropper)
     return (
         <>
             <div className='container'>
@@ -436,6 +390,7 @@ export default function App() {
                     </div>
                 </div>
                 <div className="row" id="actions">
+                    {/* TODO ManualActions */}
                     <div className="col-9 docs-buttons">
                         {/* <!-- <h3>Toolbar:</h3> --> */}
                         <div className="btn-group">
@@ -725,6 +680,7 @@ export default function App() {
                                     className='icon-link icon-link-hover fa fa-download'
                                     ref={downloadAnchorRef}
                                     download={uploadedImageName}
+                                    href={encodeData}
                                 >download</a>
                             </div>
                         }
