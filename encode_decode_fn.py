@@ -9,6 +9,8 @@ BCH_POLYNOMIAL = 137
 BCH_BITS = 5
 
 # load model
+# FIXME use v2 api `compat.v1`
+# refs https://www.tensorflow.org/guide/migrate
 sess = tf.compat.v1.InteractiveSession(graph=tf.Graph())
 
 model = tf.compat.v1.saved_model.loader.load(sess, [tag_constants.SERVING], "./saved_models/stegastamp_pretrained")
