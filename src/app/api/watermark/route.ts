@@ -63,7 +63,7 @@ async function handleDecoder(filePath: string) {
   return data
 }
 
-function abortSignal(timeout = 10000) {
+function abortSignal(timeout = 600000) {
   const abort = new AbortController();
   const { signal } = abort;
   const id = setTimeout(() => abort.abort(), timeout);
