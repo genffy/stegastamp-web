@@ -5,7 +5,7 @@ The web for [StegaStamp](https://github.com/tancik/StegaStamp), and the demo ide
 ### StegaStamp
 Read [INSTALLATION.md](INSTALLATION.md) and confirm that you have installed all dependencies and run it as expected.
 
-Note: the pyhon version 3.10 recommended.
+Note: the python version 3.10 recommended.
 ### StegaStamp-web
 
 First, confirm `python web_cli.py` can run as expected.
