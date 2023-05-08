@@ -13,7 +13,7 @@ def encode_test():
     # img = Image.open("input/400_400_transparent.png")
     img = Image.open('./input/' + filename + '.png')
     # crop_img = img.crop((0,400,400,800))
-    im_hidden, im_residual = encode_img(img)
+    im_hidden = encode_img(img)
     # img.paste(im_hidden, (0,400,400,800))
     # im_hidden.save('./corp/'+filename+'.png')
     if has_transparency(img):
@@ -21,7 +21,6 @@ def encode_test():
         r, g, b = im_hidden.split()
         im_hidden = Image.merge('RGBA', (r, g, b, alpha_channel_save))
     if im_hidden:
-        # encode_img.show()
         im_hidden.save('./corp/' + filename + '.png')
 
 
@@ -99,16 +98,14 @@ def batch_encode(img, secret_str, tile_size=400):
             # Crop the current tile from the input image
             tile = new_image.crop((x1, y1, x2, y2))
             # # Save the current tile as a separate image
-            im_hidden, im_residual = encode_img(tile, secret_str)
+            im_hidden = encode_img(tile, secret_str)
             # bg = Image.new(im.mode, im.size, (255,255,255,0))
             # diff = ImageChops.difference(tile, im_hidden)
             # print(diff)
             # im_hidden.save(f'corp/spilt/tile_{i}_{j}.png')
             img.paste(im_hidden, (x1, y1, x2, y2))
             # if im_hidden:
-            #     # encode_img.show()
             #     im_hidden.save(f'corp/tile_{i}_{j}.png')
-            #     im_residual.save(f'corp/tile_{i}_{j}_residual.png')
             # else:
             #     tile.save(f'corp/tile_{i}_{j}.png')
     return img
@@ -151,7 +148,7 @@ def encode_for4(img):
         tile = new_image.crop((x1, y1, x2, y2))
         # Save the current tile as a separate image
         tile = tile.resize((model_size, model_size))
-        im_hidden, im_residual = encode_img(tile)
+        im_hidden = encode_img(tile)
         if im_hidden:
             # if has alpha layer, remember put it back
             if has_transparency(tile):

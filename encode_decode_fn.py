@@ -34,6 +34,8 @@ bch = bchlib.BCH(BCH_POLYNOMIAL, BCH_BITS)
 size = (width, height)
 
 def get_secrect(secret_str='Stega!!'):
+    # force to 7 char
+    secret_str = secret_str[0:6]
     data = bytearray(secret_str + ' '*(7-len(secret_str)), 'utf-8')
     ecc = bch.encode(data)
     packet = data + ecc
@@ -55,8 +57,16 @@ def trim_and_convert(im):
         print('pure convert')
         return im.convert('RGB')
 
-def encode_img(input_img, secret_str):
+def encode_img(input_img, secret_str, select='0,0,400,400'):
     secret = get_secrect(secret_str)
+    # get encode area 
+    new_image = input_img.copy()
+    arr = [x.strip() for x in select.split(',')]
+    x1, y1, x2, y2 = int(arr[0]), int(arr[1]), int(arr[2]), int(arr[3])
+    input_img = new_image.crop((x1, y1, x2, y2))
+    # resize to 400 400
+    input_img = input_img.resize(size)
+    # convert to RGB
     image = input_img.convert("RGB")
     image = np.array(ImageOps.fit(image, size),dtype=np.float32)
     image /= 255.
@@ -67,15 +77,15 @@ def encode_img(input_img, secret_str):
     hidden_img, residual = sess.run([output_stegastamp, output_residual],feed_dict=feed_dict)
 
     rescaled = (hidden_img[0] * 255).astype(np.uint8)
-    raw_img = (image * 255).astype(np.uint8)
-    residual = residual[0]+.5
-
-    residual = (residual * 255).astype(np.uint8)
 
     im_hidden = Image.fromarray(np.array(rescaled))
 
-    im_residual = Image.fromarray(np.squeeze(np.array(residual)))
-    return im_hidden, im_residual
+    # resize to origin size
+    im_hidden = im_hidden.resize((int(x2) - int(x1), int(y2) - int(y1)))
+    # paste it 
+    input_img.paste(im_hidden, (x1, y1, x2, y2))
+
+    return input_img   
 
 def decode_img(input_img): 
     image = input_img.convert("RGB")
