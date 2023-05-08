@@ -22,7 +22,7 @@ First, confirm `python web_cli.py` can run as expected.
 
 ```bash
 python3 web_cli.py --type encode --image path/to/encode/image.png --secret encode123 --select '457,48,582,173'
-python3 web_cli.py --type decode --image path/to/decode/image.png'
+python3 web_cli.py --type decode --image path/to/decode/image.png
 ```
 
 Then run web
