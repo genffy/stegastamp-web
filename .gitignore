@@ -11,6 +11,11 @@ input/
 corp/
 venv
 
+# model artifacts downloaded on demand
+/detector_models/
+/saved_models/
+/releases/
+
 
 # web project
 

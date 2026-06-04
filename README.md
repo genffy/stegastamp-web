@@ -4,13 +4,13 @@ The web for [StegaStamp](https://github.com/tancik/StegaStamp), and the demo ide
 
 ## Installation
 
-### StegaStamp
-
-use GIT LFS load models, how to install pls check [installing-git-large-file-storage](https://docs.github.com/en/repositories/working-with-files/managing-large-files/installing-git-large-file-storage)
+### StegaStamp Models
 
 ```bash
-git lfs pull
+pnpm download-models
 ```
+
+The model archive is downloaded from the `models-v1` GitHub release and verified with SHA-256 before it is extracted. To download from another mirror, set `MODEL_ARCHIVE_URL` before running the script.
 
 Read [StegaStamp/README.md](https://github.com/tancik/StegaStamp/blob/master/README.md) and confirm that you have installed all dependencies and run it as expected.
 
